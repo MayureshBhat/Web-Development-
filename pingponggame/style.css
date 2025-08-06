@@ -1,0 +1,21 @@
+body {
+    background: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.pong-container {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+#pong {
+    display: block;
+    background: #222;
+    border: 2px solid #fff;
+    border-radius: 8px;
+}
