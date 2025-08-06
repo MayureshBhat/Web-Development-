@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Voice</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #6a11cb, #2575fc);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #333;
+    }
+
+    .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        text-align: center;
+        width: 100%;
+        max-width: 400px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .container:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+        font-size: 2rem;
+        color: #1a1a1a;
+        margin-bottom: 1.5rem;
+    }
+
+    input {
+        width: 100%;
+        padding: 0.8rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: #6a11cb;
+        box-shadow: 0 0 8px rgba(106, 17, 203, 0.5);
+    }
+
+    select {
+        width: 100%;
+        padding: 0.8rem;
+        margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        background-color: #fff;
+        cursor: pointer;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: #6a11cb;
+        box-shadow: 0 0 8px rgba(106, 17, 203, 0.5);
+    }
+
+    button {
+        width: 100%;
+        padding: 0.8rem;
+        background-color: #6a11cb;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #4c0fb0;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(76, 15, 176, 0.3);
+    }
+
+    button:active {
+        transform: translateY(0);
+        box-shadow: none;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text to Voice</h1>
+        <input type="text" placeholder="Enter text to convert" />
+        <select id="voiceSelect">
+            <option value="">Select a voice</option>
+        </select>
+        <button>Convert to Voice</button>
+    </div>
+
+    <script>
+        const input = document.querySelector('input');
+        const button = document.querySelector('button');
+        const voiceSelect = document.querySelector('#voiceSelect');
+
+        let voices = [];
+
+        // Load available voices
+        const loadVoices = () => {
+            voices = window.speechSynthesis.getVoices();
+            voiceSelect.innerHTML = '<option value="">Select a voice</option>';
+            voices.forEach((voice, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+        };
+
+        // Initialize voices (some browsers need an event to load voices)
+        loadVoices();
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+
+        const textToSpeech = () => {
+            const text = input.value;
+            if (!text) return;
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const selectedVoiceIndex = voiceSelect.value;
+
+            if (selectedVoiceIndex !== '') {
+                utterance.voice = voices[selectedVoiceIndex];
+            }
+
+            window.speechSynthesis.speak(utterance);
+        };
+
+        button.addEventListener('click', textToSpeech);
+    </script>
+</body>
+</html>
