@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenStyle - Salon Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Main Container -->
+    <div id="app-container" class="max-w-7xl mx-auto p-4">
+
+        <!-- Header -->
+        <header class="flex justify-between items-center py-4 border-b border-slate-200">
+            <h1 class="text-3xl font-bold text-teal-600">ZenStyle</h1>
+            <button id="show-admin-btn" class="text-sm font-medium text-slate-600 hover:text-teal-600 transition-colors">Salon Owner Login</button>
+        </header>
+
+        <!-- Customer View -->
+        <div id="customer-view" class="fade-in">
+            <!-- Salon List View -->
+            <div id="salon-list-view">
+                <div class="text-center my-8">
+                    <h2 class="text-3xl font-bold tracking-tight">Find & Book Your Perfect Salon in Dhule</h2>
+                    <p class="mt-2 text-slate-600">Appointments made easy, for Men & Women.</p>
+                </div>
+                <div id="salon-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Salon cards will be injected here by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Salon Detail View -->
+            <div id="salon-detail-view" class="hidden fade-in">
+                <!-- Salon details will be injected here -->
+            </div>
+        </div>
+
+        <!-- Admin Portal View -->
+        <div id="admin-portal" class="hidden fade-in">
+            <div class="flex justify-between items-center my-8">
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight">Salon Admin Portal</h2>
+                    <p class="mt-1 text-slate-600">Manage your appointments and track your growth.</p>
+                </div>
+                <button id="back-to-customer-btn" class="text-sm font-medium text-slate-600 hover:text-teal-600 transition-colors">← Back to Main Site</button>
+            </div>
+
+            <!-- Admin Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center mb-8">
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-slate-500">Total Bookings</p>
+                    <p id="total-bookings-stat" class="text-2xl font-bold text-teal-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-slate-500">Pending</p>
+                    <p id="pending-bookings-stat" class="text-2xl font-bold text-orange-500">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-slate-500">Confirmed</p>
+                    <p id="confirmed-bookings-stat" class="text-2xl font-bold text-green-500">0</p>
+                </div>
+                 <div class="bg-white p-4 rounded-lg shadow">
+                    <p class="text-sm text-slate-500">Total Revenue</p>
+                    <p id="total-revenue-stat" class="text-2xl font-bold text-blue-600">₹0</p>
+                </div>
+            </div>
+
+            <!-- Appointment List -->
+            <div>
+                <h3 class="text-xl font-bold mb-4">Appointment Requests</h3>
+                <div id="appointment-list" class="space-y-4">
+                    <!-- Appointments will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Modal -->
+    <div id="booking-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div id="booking-modal-content" class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md fade-in">
+            <!-- Modal content will be injected here -->
+        </div>
+    </div>
+
+
+    <script>
+        // --- DATA (This acts as our simple database for the MVP) ---
+        const salons = [
+            {
+                id: 1,
+                name: "Aarav's Modern Men's Salon",
+                location: "PUNE",
+                gender: "Men",
+                image: "https://placehold.co/600x400/16a34a/white?text=Aarav's+Salon",
+                services: [
+                    { id: 101, name: "Haircut", price: 150 },
+                    { id: 102, name: "Beard Trim & Style", price: 100 },
+                    { id: 103, name: "Hair Wash", price: 80 },
+                    { id: 104, name: "Facial", price: 500 }
+                ]
+            },
+            {
+                id: 2,
+                name: "Priya's Beauty Studio",
+                location: "Viman Nagaer, Pune",
+                gender: "Women",
+                image: "https://placehold.co/600x400/db2777/white?text=Priya's+Studio",
+                services: [
+                    { id: 201, name: "Haircut & Styling", price: 400 },
+                    { id: 202, name: "Manicure", price: 300 },
+                    { id: 203, name: "Bridal Makeup", price: 5000 },
+                    { id: 204, name: "Waxing (Full Arms)", price: 250 }
+                ]
+            },
+            {
+                id: 3,
+                name: "Style & Smile Unisex Salon",
+                location: "FC Road, Pune",
+                gender: "Unisex",
+                image: "https://placehold.co/600x400/4f46e5/white?text=Style+%26+Smile",
+                services: [
+                    { id: 301, name: "Unisex Haircut", price: 200 },
+                    { id: 302, name: "Hair Coloring", price: 1200 },
+                    { id: 303, name: "Pedicure", price: 350 },
+                    { id: 304, name: "Head Massage", price: 250 }
+                ]
+            }
+        ];
+
+        let appointments = []; // This will store all booking objects
+
+        // --- DOM ELEMENTS ---
+        const customerView = document.getElementById('customer-view');
+        const adminPortal = document.getElementById('admin-portal');
+        const showAdminBtn = document.getElementById('show-admin-btn');
+        const backToCustomerBtn = document.getElementById('back-to-customer-btn');
+        const salonListView = document.getElementById('salon-list-view');
+        const salonDetailView = document.getElementById('salon-detail-view');
+        const salonListContainer = document.getElementById('salon-list');
+        const bookingModal = document.getElementById('booking-modal');
+
+        // --- RENDER FUNCTIONS ---
+
+        function renderSalons() {
+            salonListContainer.innerHTML = ''; // Clear existing list
+            salons.forEach(salon => {
+                const salonCard = `
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-shadow" onclick="showSalonDetails(${salon.id})">
+                        <img src="${salon.image}" alt="${salon.name}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <span class="inline-block bg-teal-100 text-teal-800 text-xs font-semibold px-2 py-1 rounded-full mb-2">${salon.gender}</span>
+                            <h3 class="text-xl font-bold">${salon.name}</h3>
+                            <p class="text-sm text-slate-500">${salon.location}</p>
+                        </div>
+                    </div>
+                `;
+                salonListContainer.innerHTML += salonCard;
+            });
+        }
+
+        function showSalonDetails(salonId) {
+            const salon = salons.find(s => s.id === salonId);
+            if (!salon) return;
+
+            let servicesHtml = salon.services.map(service => `
+                <div class="flex justify-between items-center p-3 border-b border-slate-100">
+                    <div>
+                        <p class="font-semibold">${service.name}</p>
+                        <p class="text-sm text-slate-600">₹${service.price}</p>
+                    </div>
+                    <button class="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition-colors" onclick="openBookingModal(${salon.id}, ${service.id})">Book</button>
+                </div>
+            `).join('');
+
+            salonDetailView.innerHTML = `
+                <button onclick="showSalonList()" class="mb-6 text-sm font-medium text-slate-600 hover:text-teal-600 transition-colors">← Back to Salons</button>
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <img src="${salon.image}" alt="${salon.name}" class="w-full h-64 object-cover">
+                    <div class="p-6">
+                        <h2 class="text-3xl font-bold">${salon.name}</h2>
+                        <p class="text-md text-slate-500 mt-1">${salon.location}</p>
+                        <h3 class="text-xl font-bold mt-6 mb-2">Services</h3>
+                        <div class="border-t border-slate-200">${servicesHtml}</div>
+                    </div>
+                </div>
+            `;
+
+            salonListView.classList.add('hidden');
+            salonDetailView.classList.remove('hidden');
+        }
+        
+        function openBookingModal(salonId, serviceId) {
+            const salon = salons.find(s => s.id === salonId);
+            const service = salon.services.find(ser => ser.id === serviceId);
+
+            const timeSlots = ["10:00 AM", "11:00 AM", "12:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM"];
+            let timeSlotsHtml = timeSlots.map(time => `<button class="time-slot-btn bg-slate-100 text-slate-700 px-3 py-2 rounded-md hover:bg-teal-500 hover:text-white transition-colors text-sm">${time}</button>`).join('');
+
+            const modalContent = document.getElementById('booking-modal-content');
+            modalContent.innerHTML = `
+                <h3 class="text-xl font-bold mb-1">Book Appointment</h3>
+                <p class="text-slate-600 mb-4">You are booking <span class="font-semibold">${service.name}</span> at ${salon.name}</p>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Your Name</label>
+                    <input type="text" id="customer-name" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., Rohan Sharma">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                    <input type="tel" id="customer-phone" class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500" placeholder="e.g., 9876543210">
+                </div>
+                <div class="mb-4">
+                     <label class="block text-sm font-medium text-slate-700 mb-2">Select a Time Slot</label>
+                     <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        ${timeSlotsHtml}
+                     </div>
+                </div>
+                <p class="text-center font-semibold text-lg my-4">Total: ₹${service.price}</p>
+                <div class="flex justify-end gap-3 mt-4">
+                    <button class="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300" onclick="closeBookingModal()">Cancel</button>
+                    <button id="confirm-booking-btn" class="bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-teal-700 disabled:bg-slate-400" disabled>Confirm Booking</button>
+                </div>
+            `;
+            bookingModal.classList.remove('hidden');
+
+            let selectedTime = null;
+            document.querySelectorAll('.time-slot-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.time-slot-btn').forEach(b => {
+                        b.classList.remove('bg-teal-600', 'text-white');
+                        b.classList.add('bg-slate-100', 'text-slate-700');
+                    });
+                    btn.classList.add('bg-teal-600', 'text-white');
+                    selectedTime = btn.textContent;
+                    document.getElementById('confirm-booking-btn').disabled = false;
+                }
+            });
+
+            document.getElementById('confirm-booking-btn').onclick = () => {
+                const customerName = document.getElementById('customer-name').value;
+                const customerPhone = document.getElementById('customer-phone').value;
+
+                if (!customerName || !customerPhone || !selectedTime) {
+                    alert("Please fill in all details and select a time slot.");
+                    return;
+                }
+                
+                const newAppointment = {
+                    id: Date.now(),
+                    salonId: salon.id,
+                    salonName: salon.name,
+                    serviceId: service.id,
+                    serviceName: service.name,
+                    price: service.price,
+                    customerName: customerName,
+                    customerPhone: customerPhone,
+                    time: selectedTime,
+                    date: new Date().toLocaleDateString('en-IN'),
+                    status: 'Pending' // Can be 'Pending', 'Confirmed', 'Cancelled'
+                };
+
+                appointments.push(newAppointment);
+                console.log('New appointment added:', appointments);
+                
+                closeBookingModal();
+                showConfirmationMessage(newAppointment);
+                renderAdminPortal();
+            };
+        }
+        
+        function closeBookingModal() {
+            bookingModal.classList.add('hidden');
+        }
+        
+        function showConfirmationMessage(appointment) {
+            const modalContent = document.getElementById('booking-modal-content');
+            modalContent.innerHTML = `
+                <div class="text-center">
+                    <svg class="mx-auto h-12 w-12 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-xl font-bold mt-4">Booking Request Sent!</h3>
+                    <p class="text-slate-600 mt-2">Your request for <span class="font-semibold">${appointment.serviceName}</span> at <span class="font-semibold">${appointment.salonName}</span> for <span class="font-semibold">${appointment.time}</span> has been sent. You will receive a confirmation soon.</p>
+                    <button class="mt-6 bg-teal-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-teal-700" onclick="closeBookingModal()">Done</button>
+                </div>
+            `;
+            bookingModal.classList.remove('hidden');
+        }
+
+
+        // --- ADMIN PORTAL FUNCTIONS ---
+        function renderAdminPortal() {
+            const appointmentList = document.getElementById('appointment-list');
+            appointmentList.innerHTML = '';
+            
+            let totalBookings = appointments.length;
+            let pendingBookings = appointments.filter(a => a.status === 'Pending').length;
+            let confirmedBookings = appointments.filter(a => a.status === 'Confirmed').length;
+            let totalRevenue = appointments
+                .filter(a => a.status === 'Confirmed')
+                .reduce((sum, a) => sum + a.price, 0);
+
+            document.getElementById('total-bookings-stat').textContent = totalBookings;
+            document.getElementById('pending-bookings-stat').textContent = pendingBookings;
+            document.getElementById('confirmed-bookings-stat').textContent = confirmedBookings;
+            document.getElementById('total-revenue-stat').textContent = `₹${totalRevenue}`;
+            
+            if (appointments.length === 0) {
+                 appointmentList.innerHTML = `<p class="text-center text-slate-500 bg-white p-6 rounded-lg shadow">No appointments yet.</p>`;
+                 return;
+            }
+
+            // Sort to show pending appointments first
+            const sortedAppointments = [...appointments].sort((a, b) => {
+                if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+                if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+                return 0;
+            });
+
+
+            sortedAppointments.forEach(app => {
+                let statusBadge;
+                let actions;
+
+                switch (app.status) {
+                    case 'Pending':
+                        statusBadge = `<span class="bg-orange-100 text-orange-800 text-xs font-semibold px-2 py-1 rounded-full">Pending</span>`;
+                        actions = `
+                            <button class="bg-green-500 text-white px-3 py-1 rounded-md text-sm font-semibold hover:bg-green-600" onclick="confirmAppointment(${app.id})">Confirm</button>
+                            <button class="bg-red-500 text-white px-3 py-1 rounded-md text-sm font-semibold hover:bg-red-600" onclick="cancelAppointment(${app.id})">Cancel</button>
+                        `;
+                        break;
+                    case 'Confirmed':
+                        statusBadge = `<span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded-full">Confirmed</span>`;
+                        actions = ``;
+                        break;
+                    case 'Cancelled':
+                        statusBadge = `<span class="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">Cancelled</span>`;
+                        actions = ``;
+                        break;
+                }
+
+                const appointmentCard = `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <h4 class="font-bold text-lg">${app.customerName}</h4>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                <span class="font-medium">${app.serviceName}</span> at <span class="font-medium">${app.salonName}</span>
+                            </p>
+                            <p class="text-sm text-slate-500">
+                                Time: ${app.time} on ${app.date} | Phone: ${app.customerPhone} | Price: ₹${app.price}
+                            </p>
+                        </div>
+                        <div class="flex gap-2 self-end sm:self-center">
+                           ${actions}
+                        </div>
+                    </div>
+                `;
+                appointmentList.innerHTML += appointmentCard;
+            });
+        }
+        
+        function confirmAppointment(appId) {
+            const appointment = appointments.find(a => a.id === appId);
+            if (appointment) {
+                appointment.status = 'Confirmed';
+                renderAdminPortal();
+            }
+        }
+        
+        function cancelAppointment(appId) {
+            const appointment = appointments.find(a => a.id === appId);
+            if (appointment) {
+                appointment.status = 'Cancelled';
+                renderAdminPortal();
+            }
+        }
+
+
+        // --- VIEW SWITCHING LOGIC ---
+        function showSalonList() {
+            salonListView.classList.remove('hidden');
+            salonDetailView.classList.add('hidden');
+        }
+        
+        showAdminBtn.addEventListener('click', () => {
+            customerView.classList.add('hidden');
+            adminPortal.classList.remove('hidden');
+            renderAdminPortal();
+        });
+
+        backToCustomerBtn.addEventListener('click', () => {
+            adminPortal.classList.add('hidden');
+            customerView.classList.remove('hidden');
+            showSalonList(); // Go back to the main salon list
+        });
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            renderSalons();
+        };
+
+    </script>
+
+</body>
+</html> 
